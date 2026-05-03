@@ -131,33 +131,21 @@ That's it. Open a PR and watch the multi-model review comment appear.
 | `providers` | `gemini,groq,openrouter` | Comma-separated subset to enable |
 | `polish` | `1` | LLM-as-judge verdict line (`0` to disable) |
 
-### Optional: pair with Anthropic's `claude-code-action`
+### Optional: pair with Claude review via the official GitHub App
 
-For repos that already have a Claude Pro/Max subscription, run
-[`anthropics/claude-code-action`](https://github.com/anthropics/claude-code-action)
-in parallel as a second, paid-tier reviewer — no per-token billing,
-quota covered by the subscription:
+For a single deeper review pass alongside ai-chorus's multi-model
+fan-out, install the official
+[Claude GitHub App](https://github.com/apps/claude). With the App
+installed, this repo's `.github/workflows/claude-trigger.yml` posts a
+single `@claude please review` comment on every newly opened PR,
+which the App responds to using your Pro/Max subscription quota.
 
-```yaml
-# .github/workflows/claude-review.yml
-on: { pull_request: { types: [opened, synchronize, reopened] } }
-jobs:
-  claude:
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-      - uses: anthropics/claude-code-action@v1
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          prompt: 'Review this PR. Be terse, evidence-based.'
-```
+No OAuth token, no API key, no secrets in CI — just the App
+installation plus a tiny trigger workflow that uses the default
+`GITHUB_TOKEN` to post the comment.
 
-Get the OAuth token via `claude setup-token` locally, then
-`gh secret set CLAUDE_CODE_OAUTH_TOKEN`. ai-chorus and Anthropic's
-action post separate comments — orthogonal, not duplicates.
+ai-chorus and the App post **separate, complementary** comments —
+multi-model breadth from ai-chorus, single-model depth from Claude.
 
 ## Running locally
 
