@@ -140,17 +140,54 @@ Ordered loosely by ratio of value-to-effort.
 
 ### Already-decided to-do
 
-- [ ] Drop `claude-trigger.yml` — confirmed not working (Anthropic App
-      filters bot-author @mentions and modifying workflows further triggers
-      security skip). Manual `@claude` in PR description / comment is the
-      working pattern. Do this in a non-meta PR so its own merge doesn't
-      itself get skipped by review.
+- [ ] **Investigate why Claude App never posts review comments on this
+      repo.** Symptom: every `@claude` mention (manual or via bot) gets a
+      👀 reaction within seconds, but the review comment never appears.
+      Tried during this session:
+    1. Setup OAuth token via `claude setup-token` → 401 / 400 from API.
+       Anthropic restricted OAuth tokens to claude.ai / Claude Code only
+       in Feb 2026, so this path is dead for headless CI auth via
+       `claude-code-action`. Removed.
+    2. Switched to Claude GitHub App with manual `@claude` mentions
+       (PR #8 onwards). 👀 reactions, no reviews.
+    3. Added `claude-trigger.yml` workflow to post `@claude` from
+       `github-actions[bot]` on every PR open. Same 👀-only behaviour.
+    4. Suspected security skip on PR's modifying workflows or
+       guidance files (PR #6, #8, #9 all touched these). Disproved on
+       PR #10 which only adds `docs/roadmap.md` — Claude still silent.
+    5. Found that Claude App was requesting **updated permissions**
+       (Read/Write Webhooks, Read/Write Checks — were read-only).
+       Accepted the new permissions. Still silent on PR #10 even after.
+    6. Closed and reopened PR #10 to re-fire `opened` events on the
+       freshly-permissioned App. Pending verification at session close.
+
+      **What's left to try next session:**
+    - Verify daily Claude Max quota isn't exhausted at
+      `https://claude.ai/settings/usage`.
+    - Check `https://claude.ai/code` (or wherever Claude Code GitHub
+      settings live now) for any `auto-review`, `respond to mentions`,
+      or `enabled repos` toggle similar to Codex's settings panel.
+    - Verify the App is granted access to `ArLeyar/ai-chorus`
+      specifically (`https://github.com/settings/installations` →
+      Claude → Configure → Repository access).
+    - If those all check out: open a fresh, fully-clean PR (not
+      modifying any meta files, not pinging from a bot) and observe.
+    - Consider switching to paid `ANTHROPIC_API_KEY` + Haiku as a 4th
+      provider in ai-chorus instead of via App — different auth path,
+      avoids whatever is blocking the App.
+
+- [ ] Drop `claude-trigger.yml` — confirmed not working anyway (App
+      doesn't review even on manual mentions on this repo). Do this in
+      a non-meta PR so its own merge doesn't itself get skipped by
+      review.
 - [ ] Smoke test on a fresh non-meta PR after `claude-trigger.yml` removal:
-      should produce 3 review surfaces — ai-chorus comment, Codex 👍 (or
-      review), Claude review.
+      should produce review surfaces — ai-chorus comment, Codex 👍 (or
+      review), and ideally a Claude review (depends on the investigation
+      above).
 - [ ] Decide: keep both `CLAUDE.md` and `AGENTS.md` or drop one. Test
-      empirically: open one PR with only AGENTS.md changed, observe whether
-      Claude App still respects guidelines. If yes, drop CLAUDE.md.
+      empirically once Claude App reviews are working: open one PR with
+      only AGENTS.md changed, observe whether Claude still respects
+      guidelines.
 
 ### Stats / observability
 
