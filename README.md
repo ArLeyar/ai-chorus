@@ -162,7 +162,7 @@ GOOGLE_API_KEY=... GROQ_API_KEY=... OPENROUTER_API_KEY=... \
 ## Cost
 
 At free-tier limits — **$0 marginal**. If migrated to paid frontier models
-(e.g. Claude Sonnet 4.7 + GPT-5 + Gemini 2.5 Pro) for higher quality and
+(e.g. Claude Sonnet 4.6 + GPT-5 + Gemini 2.5 Pro) for higher quality and
 fewer rate-limit interruptions, expect roughly $0.30-0.80 per PR for three
 parallel reviews on a typical mid-sized diff. Vendor-agnostic providers
 make the swap a one-line config change in `src/chorus/providers.py`.
