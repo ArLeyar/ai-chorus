@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- `docs/roadmap.md` — Phase 2/3/4 plans (Slack assistant, Linear agent,
+  unified gateway), backlog with explicit to-do items, and notes
+  captured during the integration session that would otherwise be lost
+  (Anthropic OAuth restriction, free-tier rate-limit gotchas, App
+  security skip patterns, Codex preference inheritance UX trap).
 - `AGENTS.md` and `CLAUDE.md` (identical content) — review guidelines
   for the parallel AI reviewers (Claude GitHub App, Codex App,
   ai-chorus). Centralises severity calibration, what to focus on
