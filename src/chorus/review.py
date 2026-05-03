@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import os
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -91,14 +92,33 @@ def _resolve_diff() -> str:
 
     Two modes:
       - PR_BASE_SHA + PR_HEAD_SHA env (CI): diff between those SHAs
-      - dry-run local: HEAD~1..HEAD as a sensible default
+      - dry-run local: HEAD~1..HEAD if available, else uncommitted changes,
+        else the full first commit (so smoke test always has something)
     """
     base = os.environ.get("PR_BASE_SHA")
     head = os.environ.get("PR_HEAD_SHA")
-    if not base or not head:
-        # Local default — last commit
-        base, head = "HEAD~1", "HEAD"
-    return gh.fetch_diff(base, head)
+    if base and head:
+        return gh.fetch_diff(base, head)
+
+    # Local default — try increasingly conservative fallbacks
+    try:
+        return gh.fetch_diff("HEAD~1", "HEAD")
+    except Exception:  # noqa: BLE001
+        pass
+
+    # Either single-commit repo or no commits — show whatever's most recent
+    try:
+        out = subprocess.run(
+            ["git", "show", "HEAD", "--format="],
+            capture_output=True, text=True, check=True,
+        )
+        return out.stdout
+    except Exception:  # noqa: BLE001
+        # Truly empty repo — show staged + unstaged
+        out = subprocess.run(
+            ["git", "diff", "HEAD"], capture_output=True, text=True
+        )
+        return out.stdout
 
 
 async def _amain(args: argparse.Namespace) -> int:
