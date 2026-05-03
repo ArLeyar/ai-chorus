@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- `AGENTS.md` and `CLAUDE.md` (identical content) — review guidelines
+  for the parallel AI reviewers (Claude GitHub App, Codex App,
+  ai-chorus). Centralises severity calibration, what to focus on
+  vs skip, code conventions. Both filenames committed because vendor
+  branding hasn't converged on a single standard yet.
 - `.github/workflows/claude-trigger.yml` — posts a single `@claude
   please review` comment on every newly opened PR (regardless of how
   the PR was opened: UI, API, script, bot). The official Claude GitHub
