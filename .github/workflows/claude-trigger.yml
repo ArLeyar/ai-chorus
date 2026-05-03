@@ -1,0 +1,37 @@
+name: Claude review trigger
+
+# Posts a single "@claude please review" comment on every newly opened PR,
+# which the official Claude GitHub App responds to.
+#
+# Why a workflow instead of pull_request_template.md alone:
+#   - Templates only render in the GitHub web UI and `gh pr create` without
+#     --body. PRs created via API / scripts / bots bypass them entirely.
+#   - This workflow guarantees the @claude trigger regardless of how the PR
+#     was opened.
+#
+# No secrets needed: the default GITHUB_TOKEN can post comments.
+# No cost: the App responds using the maintainer's Claude Pro/Max
+# subscription quota, not API tokens.
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    # Skip when the PR was opened by a bot (avoids loops if some
+    # automation ever opens a PR — Claude App also typically ignores
+    # bot-authored mentions, but we belt-and-suspender).
+    if: ${{ github.event.pull_request.user.type != 'Bot' }}
+    steps:
+      - name: Mention @claude
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} \
+            --repo ${{ github.repository }} \
+            --body "@claude please review this PR. Use available tools to verify cross-file impact before reporting issues. Be terse and evidence-based; if the diff is clean, say so in one line."

@@ -8,10 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
-- `.github/pull_request_template.md` containing an `@claude` mention.
-  The official Claude GitHub App responds on every new PR — quota
-  covered by the user's Pro/Max subscription, no workflow or secrets
-  in CI.
+- `.github/workflows/claude-trigger.yml` — posts a single `@claude
+  please review` comment on every newly opened PR (regardless of how
+  the PR was opened: UI, API, script, bot). The official Claude GitHub
+  App responds using the user's Pro/Max subscription quota. No OAuth
+  token, no API key, no secrets in CI.
+- `.github/pull_request_template.md` with `## What` / `## Tests`
+  structure for human-authored PR descriptions.
 
 ### Removed
 - `.github/workflows/claude-review.yml` and the OAuth-token integration

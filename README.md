@@ -131,18 +131,18 @@ That's it. Open a PR and watch the multi-model review comment appear.
 | `providers` | `gemini,groq,openrouter` | Comma-separated subset to enable |
 | `polish` | `1` | LLM-as-judge verdict line (`0` to disable) |
 
-### Optional: on-demand Claude review via the official GitHub App
+### Optional: pair with Claude review via the official GitHub App
 
-If you also want a single deeper review pass — e.g. to triage a tricky
-PR after ai-chorus's quick fan-out — install the official
-[Claude GitHub App](https://github.com/apps/claude) and mention
-`@claude` in the PR description or any comment. The App responds with
-a Sonnet-quality review using your Pro/Max subscription quota; no
-workflow file, no OAuth token, no API key in CI.
+For a single deeper review pass alongside ai-chorus's multi-model
+fan-out, install the official
+[Claude GitHub App](https://github.com/apps/claude). With the App
+installed, this repo's `.github/workflows/claude-trigger.yml` posts a
+single `@claude please review` comment on every newly opened PR,
+which the App responds to using your Pro/Max subscription quota.
 
-A `.github/pull_request_template.md` containing `@claude please review`
-is committed to this repo so every new PR gets it automatically. Drop
-the template if you'd rather invoke `@claude` only on demand.
+No OAuth token, no API key, no secrets in CI — just the App
+installation plus a tiny trigger workflow that uses the default
+`GITHUB_TOKEN` to post the comment.
 
 ai-chorus and the App post **separate, complementary** comments —
 multi-model breadth from ai-chorus, single-model depth from Claude.
