@@ -51,14 +51,14 @@ PROVIDERS: dict[str, ProviderConfig] = {
     ),
     "openrouter": ProviderConfig(
         key="openrouter",
-        # NVIDIA-hosted, less prone to Venice/Together free-tier throttling
-        # observed on qwen/deepseek free endpoints (2026-05).
-        model="openrouter:nvidia/nemotron-3-super-120b-a12b:free",
+        # Probed 2026-05: 1.2s avg latency, 200 status.
+        # Smaller non-reasoning Nemotron — picked for reliability over depth.
+        # On free tier we optimize for "always responds" not "best review".
+        model="openrouter:nvidia/nemotron-3-nano-30b-a3b:free",
         env_var="OPENROUTER_API_KEY",
-        display_name="Nemotron 3 Super 120B (OpenRouter)",
-        # Reasoning model — slower, but context is wide.
-        max_input_chars=80_000,
-        timeout_s=180.0,
+        display_name="Nemotron 3 Nano 30B (OpenRouter)",
+        max_input_chars=40_000,
+        timeout_s=60.0,
     ),
 }
 
