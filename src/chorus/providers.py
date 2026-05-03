@@ -23,6 +23,10 @@ class ProviderConfig:
     max_input_chars: int = 80_000
     # Per-provider wall-clock cap. Reasoning models (Nemotron) are slower.
     timeout_s: float = 90.0
+    # Whether to register tools (read_file/grep/find_callers). Some free
+    # OpenRouter routes return 404 on tool_choice — set False there to fall
+    # back to diff-only review.
+    supports_tools: bool = True
 
 
 # Source of truth. Verified against Pydantic AI docs (2026-05):
@@ -59,6 +63,9 @@ PROVIDERS: dict[str, ProviderConfig] = {
         display_name="Nemotron 3 Nano 30B (OpenRouter)",
         max_input_chars=40_000,
         timeout_s=60.0,
+        # Free OpenRouter routes for nano-30b reject tool_choice (404).
+        # Diff-only review still produces a useful third opinion.
+        supports_tools=False,
     ),
 }
 
