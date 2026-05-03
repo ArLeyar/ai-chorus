@@ -40,8 +40,11 @@ PROVIDERS: dict[str, ProviderConfig] = {
         env_var="GOOGLE_API_KEY",
         display_name="Gemini 2.5 Flash",
         # Gemini Flash has generous free quotas; safe with full diff cap.
+        # Bumped from 90s → 150s after observing timeout on a large
+        # config-rewrite diff. Gemini's tool-calling agent loop can take
+        # multiple round trips when it decides to read source files.
         max_input_chars=80_000,
-        timeout_s=90.0,
+        timeout_s=150.0,
     ),
     "groq": ProviderConfig(
         key="groq",
