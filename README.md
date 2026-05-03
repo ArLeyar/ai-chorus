@@ -190,6 +190,9 @@ Free-tier rate limits (links to authoritative sources, since they change):
 
 ## Roadmap
 
+See [`docs/roadmap.md`](docs/roadmap.md) for the full plan, phase
+details, and current backlog. High level:
+
 - **Phase 2 — Slack assistant.** FastAPI + Slack Bolt async; same agents +
   tools answer "how does X work?" in channels.
 - **Phase 3 — Linear agent.** Linear Agent API (OAuth `actor=app`,
