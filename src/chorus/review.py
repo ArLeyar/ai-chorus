@@ -10,7 +10,6 @@ from __future__ import annotations
 import argparse
 import asyncio
 import os
-import subprocess
 import sys
 import time
 from pathlib import Path
@@ -19,6 +18,7 @@ from chorus import consensus as consensus_mod
 from chorus import github as gh
 from chorus import markdown as md
 from chorus.agents import make_reviewer
+from chorus.diff import resolve_diff, truncate_diff
 from chorus.models import ProviderReview
 from chorus.providers import ProviderConfig, active_providers, has_api_key
 from chorus.tools import Deps
@@ -26,9 +26,6 @@ from chorus.tools import Deps
 # Per-provider wall-clock cap. Free models are slow; this catches the
 # pathological "stuck connection" case without killing healthy long runs.
 PROVIDER_TIMEOUT_S = 90.0
-
-# Keep the diff bounded — large PRs explode token budgets fast.
-MAX_DIFF_CHARS = 80_000
 
 
 async def _run_one(provider: ProviderConfig, diff: str, deps: Deps) -> ProviderReview:
@@ -87,48 +84,13 @@ async def run_reviews(diff: str, repo_dir: Path) -> list[ProviderReview]:
     return await asyncio.gather(*[_run_one(p, diff, deps) for p in providers])
 
 
-def _resolve_diff() -> str:
-    """Get the diff to review.
-
-    Two modes:
-      - PR_BASE_SHA + PR_HEAD_SHA env (CI): diff between those SHAs
-      - dry-run local: HEAD~1..HEAD if available, else uncommitted changes,
-        else the full first commit (so smoke test always has something)
-    """
-    base = os.environ.get("PR_BASE_SHA")
-    head = os.environ.get("PR_HEAD_SHA")
-    if base and head:
-        return gh.fetch_diff(base, head)
-
-    # Local default — try increasingly conservative fallbacks
-    try:
-        return gh.fetch_diff("HEAD~1", "HEAD")
-    except Exception:  # noqa: BLE001
-        pass
-
-    # Either single-commit repo or no commits — show whatever's most recent
-    try:
-        out = subprocess.run(
-            ["git", "show", "HEAD", "--format="],
-            capture_output=True, text=True, check=True,
-        )
-        return out.stdout
-    except Exception:  # noqa: BLE001
-        # Truly empty repo — show staged + unstaged
-        out = subprocess.run(
-            ["git", "diff", "HEAD"], capture_output=True, text=True
-        )
-        return out.stdout
-
-
 async def _amain(args: argparse.Namespace) -> int:
-    diff = _resolve_diff()
+    diff = resolve_diff()
     if not diff.strip():
         print("Empty diff — nothing to review.", file=sys.stderr)
         return 0
 
-    if len(diff) > MAX_DIFF_CHARS:
-        diff = diff[:MAX_DIFF_CHARS] + f"\n\n[diff truncated at {MAX_DIFF_CHARS} chars]"
+    diff = truncate_diff(diff)
 
     repo_dir = Path.cwd()
     reviews = await run_reviews(diff, repo_dir)
