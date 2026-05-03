@@ -97,8 +97,10 @@ def render(consensus: Consensus, reviews: list[ProviderReview]) -> str:
     # 4. Unique findings — collapsed
     unique_groups = [g for g in consensus.groups if g.classification == "unique"]
     if unique_groups:
-        parts.append(f"<details>\n<summary><b>🔍 Unique findings ({len(unique_groups)})</b> — "
-                     "only one reviewer raised, needs human judgment</summary>\n")
+        parts.append(
+            f"<details>\n<summary><b>🔍 Unique findings ({len(unique_groups)})</b> — "
+            "only one reviewer raised, needs human judgment</summary>\n"
+        )
         for g in unique_groups:
             parts.append(_render_group(g))
         parts.append("</details>\n")

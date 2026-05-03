@@ -66,9 +66,7 @@ def grep(deps: Deps, pattern: str, path_glob: str = "") -> str:
     cmd.append(".")
 
     try:
-        result = subprocess.run(
-            cmd, cwd=deps.repo_dir, capture_output=True, text=True, timeout=15
-        )
+        result = subprocess.run(cmd, cwd=deps.repo_dir, capture_output=True, text=True, timeout=15)
     except subprocess.TimeoutExpired:
         return "ERROR: grep timed out"
     except FileNotFoundError:

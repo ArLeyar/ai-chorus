@@ -41,12 +41,7 @@ async def _run_one(provider: ProviderConfig, diff: str, deps: Deps) -> ProviderR
     started = time.monotonic()
     try:
         agent = make_reviewer(provider)
-        prompt = (
-            "Review this pull request diff.\n\n"
-            "```diff\n"
-            f"{diff}\n"
-            "```\n"
-        )
+        prompt = f"Review this pull request diff.\n\n```diff\n{diff}\n```\n"
         result = await asyncio.wait_for(
             agent.run(prompt, deps=deps),
             timeout=PROVIDER_TIMEOUT_S,

@@ -51,11 +51,15 @@ def test_render_all_failed_does_not_crash():
 def test_render_consensus_findings_section():
     reviews = [
         ProviderReview(
-            provider="gemini", model="x", status="ok",
+            provider="gemini",
+            model="x",
+            status="ok",
             findings=[_f("a.py", "bug found", severity="critical")],
         ),
         ProviderReview(
-            provider="groq", model="y", status="ok",
+            provider="groq",
+            model="y",
+            status="ok",
             findings=[_f("a.py", "found bug", severity="critical")],
         ),
     ]
@@ -67,8 +71,7 @@ def test_render_consensus_findings_section():
 def test_render_no_findings():
     """Clean PR — reviewers ran but found nothing."""
     reviews = [
-        ProviderReview(provider="gemini", model="x", status="ok",
-                       findings=[], summary="LGTM"),
+        ProviderReview(provider="gemini", model="x", status="ok", findings=[], summary="LGTM"),
     ]
     output = render(consolidate(reviews), reviews)
     assert "0 findings" in output

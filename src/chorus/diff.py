@@ -43,11 +43,11 @@ def resolve_diff() -> str:
     try:
         out = subprocess.run(
             ["git", "show", "HEAD", "--format="],
-            capture_output=True, text=True, check=True,
+            capture_output=True,
+            text=True,
+            check=True,
         )
         return out.stdout
     except Exception:  # noqa: BLE001
-        out = subprocess.run(
-            ["git", "diff", "HEAD"], capture_output=True, text=True
-        )
+        out = subprocess.run(["git", "diff", "HEAD"], capture_output=True, text=True)
         return out.stdout

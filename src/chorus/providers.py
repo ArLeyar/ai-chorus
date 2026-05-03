@@ -38,9 +38,11 @@ PROVIDERS: dict[str, ProviderConfig] = {
     ),
     "openrouter": ProviderConfig(
         key="openrouter",
-        model="openrouter:qwen/qwen3-next-80b-a3b-instruct:free",
+        # NVIDIA-hosted, less prone to Venice/Together free-tier throttling
+        # observed on qwen/deepseek free endpoints (2026-05).
+        model="openrouter:nvidia/nemotron-3-super-120b-a12b:free",
         env_var="OPENROUTER_API_KEY",
-        display_name="Qwen3-Next 80B (OpenRouter)",
+        display_name="Nemotron 3 Super 120B (OpenRouter)",
     ),
 }
 
