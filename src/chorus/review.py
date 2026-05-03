@@ -23,13 +23,13 @@ from chorus.models import ProviderReview
 from chorus.providers import ProviderConfig, active_providers, has_api_key
 from chorus.tools import Deps
 
-# Per-provider wall-clock cap. Free models are slow; this catches the
-# pathological "stuck connection" case without killing healthy long runs.
-PROVIDER_TIMEOUT_S = 90.0
-
 
 async def _run_one(provider: ProviderConfig, diff: str, deps: Deps) -> ProviderReview:
-    """Run a single reviewer; convert any failure into a ProviderReview."""
+    """Run a single reviewer; convert any failure into a ProviderReview.
+
+    Per-provider knobs (max_input_chars, timeout_s) come from ProviderConfig
+    so each free-tier endpoint gets a budget tuned to its TPM/RPM realities.
+    """
     if not has_api_key(provider):
         return ProviderReview(
             provider=provider.key,
@@ -38,13 +38,20 @@ async def _run_one(provider: ProviderConfig, diff: str, deps: Deps) -> ProviderR
             error=f"missing {provider.env_var}",
         )
 
+    # Per-provider input cap — Groq free is 12K TPM, Gemini Flash is generous.
+    if len(diff) > provider.max_input_chars:
+        diff = (
+            diff[: provider.max_input_chars]
+            + f"\n\n[diff truncated for {provider.key} at {provider.max_input_chars} chars]"
+        )
+
     started = time.monotonic()
     try:
         agent = make_reviewer(provider)
         prompt = f"Review this pull request diff.\n\n```diff\n{diff}\n```\n"
         result = await asyncio.wait_for(
             agent.run(prompt, deps=deps),
-            timeout=PROVIDER_TIMEOUT_S,
+            timeout=provider.timeout_s,
         )
         review = result.output
         return ProviderReview(
@@ -60,10 +67,10 @@ async def _run_one(provider: ProviderConfig, diff: str, deps: Deps) -> ProviderR
             provider=provider.key,
             model=provider.model,
             status="timeout",
-            error=f"exceeded {PROVIDER_TIMEOUT_S:.0f}s",
+            error=f"exceeded {provider.timeout_s:.0f}s",
             duration_ms=int((time.monotonic() - started) * 1000),
         )
-    except Exception as e:  # noqa: BLE001 — we want to capture anything for the comment
+    except Exception as e:  # noqa: BLE001 — capture anything for the comment
         return ProviderReview(
             provider=provider.key,
             model=provider.model,
