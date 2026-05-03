@@ -75,3 +75,23 @@ def test_render_no_findings():
     ]
     output = render(consolidate(reviews), reviews)
     assert "0 findings" in output
+
+
+def test_render_with_verdict_prepends_summary():
+    """Optional LLM-judge verdict appears at the very top of the comment."""
+    reviews = [
+        ProviderReview(provider="gemini", model="x", status="ok", findings=[]),
+    ]
+    output = render(consolidate(reviews), reviews, verdict="All clean, ship it.")
+    # Verdict before the Reviewers section
+    assert output.index("Verdict:") < output.index("Reviewers")
+    assert "All clean, ship it." in output
+
+
+def test_render_without_verdict_unchanged():
+    """No verdict argument → no Verdict line in output."""
+    reviews = [
+        ProviderReview(provider="gemini", model="x", status="ok", findings=[]),
+    ]
+    output = render(consolidate(reviews), reviews)
+    assert "Verdict:" not in output

@@ -63,10 +63,19 @@ def _render_group(g: FindingGroup) -> str:
     return head + "\n".join(bodies) + "\n"
 
 
-def render(consensus: Consensus, reviews: list[ProviderReview]) -> str:
+def render(
+    consensus: Consensus,
+    reviews: list[ProviderReview],
+    *,
+    verdict: str | None = None,
+) -> str:
     parts: list[str] = []
 
     parts.append("## 🎵 ai-chorus review\n")
+
+    # Optional one-line LLM-judge verdict at the very top.
+    if verdict:
+        parts.append(f"> **Verdict:** {verdict}\n")
 
     # 1. Status header
     parts.append("### Reviewers\n")

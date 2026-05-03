@@ -17,6 +17,7 @@ from pathlib import Path
 from chorus import consensus as consensus_mod
 from chorus import github as gh
 from chorus import markdown as md
+from chorus import polish as polish_mod
 from chorus.agents import make_reviewer
 from chorus.diff import resolve_diff, truncate_diff
 from chorus.models import ProviderReview
@@ -97,7 +98,8 @@ async def _amain(args: argparse.Namespace) -> int:
     repo_dir = Path.cwd()
     reviews = await run_reviews(diff, repo_dir)
     consensus = consensus_mod.consolidate(reviews)
-    body = md.render(consensus, reviews)
+    verdict = await polish_mod.polish(consensus, reviews)
+    body = md.render(consensus, reviews, verdict=verdict)
 
     if args.dry_run:
         print(body)
