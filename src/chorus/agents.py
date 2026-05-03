@@ -9,6 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from pydantic_ai import Agent, RunContext
+from pydantic_ai.output import PromptedOutput
 
 from chorus.models import ReviewResult
 from chorus.providers import ProviderConfig
@@ -30,10 +31,17 @@ def make_reviewer(provider: ProviderConfig) -> Agent[Deps, ReviewResult]:
 
     Vendor-agnosticism is a config change, not an architectural pivot.
     """
+    # Pydantic AI defaults to tool-call-based structured output. For
+    # providers without tool support, switch to PromptedOutput which asks
+    # the model to return JSON in plain text and parses it ourselves.
+    output: type[ReviewResult] | PromptedOutput[ReviewResult] = (
+        ReviewResult if provider.supports_tools else PromptedOutput(ReviewResult)
+    )
+
     agent: Agent[Deps, ReviewResult] = Agent(
         provider.model,
         deps_type=Deps,
-        output_type=ReviewResult,
+        output_type=output,
         system_prompt=_load_prompt(),
     )
 
