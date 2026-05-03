@@ -1,4 +1,4 @@
-name: ai-chorus PR review
+name: AI Review
 
 on:
   pull_request:
@@ -6,11 +6,12 @@ on:
 
 # Cancel an in-progress review when new commits land on the same PR.
 concurrency:
-  group: chorus-review-${{ github.ref }}
+  group: review-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   review:
+    name: Multi-model PR review
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -24,17 +25,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ripgrep
 
       - uses: astral-sh/setup-uv@v3
-        with:
-          version: "latest"
-
-      - name: Install Python
-        run: uv python install 3.12
-
-      - name: Install dependencies
-        run: uv sync --frozen --no-dev
+      - run: uv python install 3.12
+      - run: uv sync --frozen --no-default-groups
 
       - name: Run multi-model review
-        run: uv run python -m chorus.review
+        # --no-sync trusts the venv from the previous step; without it
+        # `uv run` re-installs default groups (including dev → ruff/pytest).
+        run: uv run --no-sync python -m chorus.review
         env:
           # Optional — missing keys gracefully degrade to ⚠️ skipped.
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
@@ -48,12 +45,3 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v3
-      - run: uv python install 3.12
-      - run: uv sync --frozen
-      - run: uv run pytest -q

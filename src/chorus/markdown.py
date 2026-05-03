@@ -12,7 +12,10 @@ something so the Action visibly worked.
 
 from __future__ import annotations
 
-from chorus.models import Consensus, FindingGroup, ProviderReview, Severity
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from chorus.models import Consensus, Finding, FindingGroup, ProviderReview, Severity
 
 SEVERITY_EMOJI: dict[Severity, str] = {
     "critical": "🔴",
@@ -37,7 +40,7 @@ def _status_line(r: ProviderReview) -> str:
     return f"{label} — failed: {r.error or 'unknown error'}"
 
 
-def _render_finding(f, *, show_provider: str | None = None) -> str:
+def _render_finding(f: Finding, *, show_provider: str | None = None) -> str:
     head = f"{SEVERITY_EMOJI[f.severity]} **{f.severity.upper()}** · `{f.file}"
     if f.line is not None:
         head += f":{f.line}"
@@ -97,8 +100,10 @@ def render(consensus: Consensus, reviews: list[ProviderReview]) -> str:
     # 4. Unique findings — collapsed
     unique_groups = [g for g in consensus.groups if g.classification == "unique"]
     if unique_groups:
-        parts.append(f"<details>\n<summary><b>🔍 Unique findings ({len(unique_groups)})</b> — "
-                     "only one reviewer raised, needs human judgment</summary>\n")
+        parts.append(
+            f"<details>\n<summary><b>🔍 Unique findings ({len(unique_groups)})</b> — "
+            "only one reviewer raised, needs human judgment</summary>\n"
+        )
         for g in unique_groups:
             parts.append(_render_group(g))
         parts.append("</details>\n")

@@ -9,7 +9,10 @@ from __future__ import annotations
 
 import subprocess
 from dataclasses import dataclass
-from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # Per-tool output caps. Tuned for free-tier context windows.
 MAX_FILE_BYTES = 30_000
@@ -66,9 +69,7 @@ def grep(deps: Deps, pattern: str, path_glob: str = "") -> str:
     cmd.append(".")
 
     try:
-        result = subprocess.run(
-            cmd, cwd=deps.repo_dir, capture_output=True, text=True, timeout=15
-        )
+        result = subprocess.run(cmd, cwd=deps.repo_dir, capture_output=True, text=True, timeout=15)
     except subprocess.TimeoutExpired:
         return "ERROR: grep timed out"
     except FileNotFoundError:

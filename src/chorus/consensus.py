@@ -116,7 +116,7 @@ def consolidate(reviews: list[ProviderReview]) -> Consensus:
                 file=rep_finding.file,
                 title=rep_finding.title,
                 severity=severity,
-                classification=classification,  # type: ignore[arg-type]
+                classification=classification,
                 findings=[f for _, f in cluster],
                 providers=sorted({p for p, _ in cluster}),
             )

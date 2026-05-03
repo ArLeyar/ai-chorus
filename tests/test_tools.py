@@ -14,8 +14,7 @@ def repo(tmp_path: Path) -> Path:
         "def calculate_fee(amount):\n    return amount * 0.05\n"
     )
     (tmp_path / "src" / "billing.py").write_text(
-        "from .main import calculate_fee\n"
-        "result = calculate_fee(100)\n"
+        "from .main import calculate_fee\nresult = calculate_fee(100)\n"
     )
     return tmp_path
 

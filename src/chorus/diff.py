@@ -37,17 +37,17 @@ def resolve_diff() -> str:
 
     try:
         return gh.fetch_diff("HEAD~1", "HEAD")
-    except Exception:  # noqa: BLE001
+    except Exception:
         pass
 
     try:
         out = subprocess.run(
             ["git", "show", "HEAD", "--format="],
-            capture_output=True, text=True, check=True,
+            capture_output=True,
+            text=True,
+            check=True,
         )
         return out.stdout
-    except Exception:  # noqa: BLE001
-        out = subprocess.run(
-            ["git", "diff", "HEAD"], capture_output=True, text=True
-        )
+    except Exception:
+        out = subprocess.run(["git", "diff", "HEAD"], capture_output=True, text=True)
         return out.stdout
