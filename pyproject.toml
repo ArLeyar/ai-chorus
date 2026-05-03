@@ -8,7 +8,9 @@ authors = [
 requires-python = ">=3.12"
 license = { text = "MIT" }
 dependencies = [
-    "pydantic-ai>=1.0,<1.1",
+    # pydantic-ai-slim avoids pulling pydantic-evals, mcp, temporalio etc.
+    # Extras select the providers we actually use.
+    "pydantic-ai-slim[google,groq,openai]>=1.0,<1.1",
     "pydantic>=2.7",
     "httpx>=0.27",
     "rapidfuzz>=3.9",

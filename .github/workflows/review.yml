@@ -26,10 +26,12 @@ jobs:
 
       - uses: astral-sh/setup-uv@v3
       - run: uv python install 3.12
-      - run: uv sync --frozen --no-dev
+      - run: uv sync --frozen --no-default-groups
 
       - name: Run multi-model review
-        run: uv run python -m chorus.review
+        # --no-sync trusts the venv from the previous step; without it
+        # `uv run` re-installs default groups (including dev → ruff/pytest).
+        run: uv run --no-sync python -m chorus.review
         env:
           # Optional — missing keys gracefully degrade to ⚠️ skipped.
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
