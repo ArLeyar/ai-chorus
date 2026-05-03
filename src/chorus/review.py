@@ -70,7 +70,7 @@ async def _run_one(provider: ProviderConfig, diff: str, deps: Deps) -> ProviderR
             error=f"exceeded {provider.timeout_s:.0f}s",
             duration_ms=int((time.monotonic() - started) * 1000),
         )
-    except Exception as e:  # noqa: BLE001 — capture anything for the comment
+    except Exception as e:
         return ProviderReview(
             provider=provider.key,
             model=provider.model,

@@ -7,13 +7,16 @@ The vendor-agnostic dream — swap the model string, keep everything else.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.output import PromptedOutput
 
 from chorus.models import ReviewResult
-from chorus.providers import ProviderConfig
 from chorus.tools import Deps, find_callers, grep, read_file
+
+if TYPE_CHECKING:
+    from chorus.providers import ProviderConfig
 
 PROMPT_PATH = Path(__file__).parent / "prompts" / "reviewer.md"
 

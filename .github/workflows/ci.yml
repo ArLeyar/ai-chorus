@@ -23,12 +23,22 @@ jobs:
       - name: ruff format --check
         run: uv run ruff format --check src tests
 
-  test:
-    name: pytest
+  typecheck:
+    name: mypy --strict
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
       - run: uv python install 3.12
       - run: uv sync --frozen
-      - run: uv run pytest -q
+      - run: uv run mypy src
+
+  test:
+    name: pytest + coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv python install 3.12
+      - run: uv sync --frozen
+      - run: uv run pytest --cov --cov-report=term-missing
