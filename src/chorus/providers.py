@@ -38,9 +38,9 @@ PROVIDERS: dict[str, ProviderConfig] = {
     ),
     "openrouter": ProviderConfig(
         key="openrouter",
-        model="openrouter:deepseek/deepseek-r1:free",
+        model="openrouter:qwen/qwen3-next-80b-a3b-instruct:free",
         env_var="OPENROUTER_API_KEY",
-        display_name="DeepSeek R1 (OpenRouter)",
+        display_name="Qwen3-Next 80B (OpenRouter)",
     ),
 }
 
