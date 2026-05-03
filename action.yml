@@ -1,0 +1,49 @@
+name: 'ai-chorus PR review'
+description: 'Multi-model parallel PR review (Gemini + Llama + Nemotron) with deterministic consensus and optional LLM-as-judge verdict.'
+
+# Surfaced on the GitHub Marketplace listing.
+branding:
+  icon: 'check-circle'
+  color: 'blue'
+
+inputs:
+  providers:
+    description: 'Comma-separated provider keys to enable. Default: all three.'
+    required: false
+    default: 'gemini,groq,openrouter'
+  polish:
+    description: 'Enable LLM-as-judge verdict prepended to comment (1=on, 0=off).'
+    required: false
+    default: '1'
+
+runs:
+  using: 'composite'
+  steps:
+    # System tool used by the in-process grep agent tool.
+    - name: Install ripgrep
+      shell: bash
+      run: sudo apt-get update && sudo apt-get install -y ripgrep
+
+    - uses: astral-sh/setup-uv@v3
+
+    - name: Install Python
+      shell: bash
+      run: uv python install 3.13
+
+    # `--project` points uv at this action's pyproject.toml; default cwd
+    # stays at $GITHUB_WORKSPACE (the caller's repo) so `git diff` later
+    # reads the consumer's PR, not this action's source tree.
+    - name: Install chorus runtime
+      shell: bash
+      run: uv sync --frozen --no-default-groups --project ${{ github.action_path }}
+
+    # `--no-sync` trusts the venv from the previous step. Without it `uv
+    # run` silently re-syncs the default groups and pulls dev deps.
+    # API keys, GITHUB_TOKEN, and PR_*_SHA / PR_NUMBER are passed through
+    # from the caller's workflow `env:` block.
+    - name: Run multi-model review
+      shell: bash
+      env:
+        CHORUS_PROVIDERS: ${{ inputs.providers }}
+        CHORUS_POLISH: ${{ inputs.polish }}
+      run: uv run --no-sync --project ${{ github.action_path }} python -m chorus.review

@@ -61,24 +61,75 @@ The split between `ReviewResult` (LLM output_type) and `ProviderReview`
 degradation part of the data model. If a reviewer fails, the comment posts
 anyway with a clear ⚠️ marker.
 
-## Setup (in your repo)
+## Use in your repo
 
-1. Get free API keys (none require credit card):
-   - Google AI Studio: <https://aistudio.google.com/> → Get API key
-   - Groq: <https://console.groq.com/keys>
-   - OpenRouter: <https://openrouter.ai/settings/keys>
+ai-chorus ships as a [composite GitHub Action](https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-composite-action),
+so consuming repos add a single workflow file — no Python code copied across
+projects.
 
-2. Add as repo secrets:
+### 1. Get free API keys (no credit card required)
 
-   ```bash
-   gh secret set GOOGLE_API_KEY      # for Gemini
-   gh secret set GROQ_API_KEY        # for Llama
-   gh secret set OPENROUTER_API_KEY  # for Nemotron Nano
-   ```
+- Google AI Studio — <https://aistudio.google.com/> → Get API key
+- Groq — <https://console.groq.com/keys>
+- OpenRouter — <https://openrouter.ai/settings/keys>
 
-   All three are optional — missing keys gracefully degrade to "skipped".
+All three are optional — missing keys gracefully degrade to "skipped" in
+the comment.
 
-3. Copy `.github/workflows/review.yml` and `src/chorus/` into your repo.
+### 2. Add them as repo secrets
+
+```bash
+gh secret set GOOGLE_API_KEY      # → Gemini
+gh secret set GROQ_API_KEY        # → Llama
+gh secret set OPENROUTER_API_KEY  # → Nemotron Nano
+```
+
+### 3. Drop in this workflow
+
+```yaml
+# .github/workflows/ai-chorus.yml
+name: AI Review
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ai-chorus-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: ArLeyar/ai-chorus@v1
+        with:
+          providers: gemini,groq,openrouter   # subset is fine
+          polish: '1'                          # 0 to disable verdict line
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+```
+
+That's it. Open a PR and watch the multi-model review comment appear.
+
+### Action inputs
+
+| Input | Default | Description |
+|---|---|---|
+| `providers` | `gemini,groq,openrouter` | Comma-separated subset to enable |
+| `polish` | `1` | LLM-as-judge verdict line (`0` to disable) |
 
 ## Running locally
 
