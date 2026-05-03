@@ -3,8 +3,9 @@
 > Vendor-agnostic AI ops platform. **Phase 1: multi-model PR review.**
 
 When one model isn't enough, run several. Every PR in this repo gets reviewed
-by three independent LLMs in parallel — Gemini, Llama (Groq), Qwen3 80B
-(OpenRouter) — and the results are merged with deterministic consensus logic.
+by three independent LLMs in parallel — Gemini Flash, Llama 3.3 70B (Groq),
+Nemotron Nano 30B (OpenRouter) — and the results are merged with deterministic
+consensus logic.
 
 Built with [Pydantic AI](https://pydantic.dev/docs/ai/), runs entirely on
 GitHub Actions free tier, no paid API keys required.
@@ -12,10 +13,13 @@ GitHub Actions free tier, no paid API keys required.
 ## Why
 
 A typical "diff-only" code review misses cross-file impact. A single LLM
-hallucinates. Three independent LLMs with tool access (`grep`, `read_file`,
-`find_callers`) produce findings you can triangulate — when 2-of-3 flag the
-same issue, that's signal. When they disagree on severity, that's worth a
-human glance.
+hallucinates. Three independent LLMs whose findings can be triangulated
+produce signal — when 2-of-3 flag the same issue, pay attention. When they
+disagree on severity, that's worth a human glance.
+
+Reviewers that support tool calling (`grep`, `read_file`, `find_callers`)
+get them registered automatically; those that don't fall back to a
+diff-only review via `PromptedOutput`. See "tools as capability" below.
 
 ## How it works
 
@@ -35,10 +39,12 @@ GitHub Actions runner
    │                                      │
    │  • google-gla:gemini-2.5-flash       │
    │  • groq:llama-3.3-70b-versatile      │
-   │  • openrouter:qwen/qwen3-next-80b... │
+   │  • openrouter:nvidia/nemotron-3-     │
+   │             nano-30b-a3b:free        │
    │                                      │
    │  output_type = ReviewResult (Pydantic)
-   │  tools = read_file / grep / find_callers
+   │  tools (when supports_tools=True):   │
+   │    read_file / grep / find_callers   │
    └──────────────────────────────────────┘
             │
             ▼
@@ -67,7 +73,7 @@ anyway with a clear ⚠️ marker.
    ```bash
    gh secret set GOOGLE_API_KEY      # for Gemini
    gh secret set GROQ_API_KEY        # for Llama
-   gh secret set OPENROUTER_API_KEY  # for DeepSeek R1
+   gh secret set OPENROUTER_API_KEY  # for Nemotron Nano
    ```
 
    All three are optional — missing keys gracefully degrade to "skipped".
@@ -96,8 +102,11 @@ GOOGLE_API_KEY=... GROQ_API_KEY=... OPENROUTER_API_KEY=... \
 - **Graceful degradation**: every provider failure is captured as
   `ProviderReview(status=...)` with error context, so the Action never
   appears broken.
-- **Tools are optional, not required**: free models vary in tool-calling
-  reliability. Diff alone yields a baseline review; tools augment it.
+- **Tools as capability, not assumption**: each `ProviderConfig` declares
+  `supports_tools`. When False, the agent uses `PromptedOutput` (JSON in
+  text) instead of the default tool-call-based structured output. Free
+  OpenRouter routes routinely return 404 on `tool_choice` — diff-only
+  review beats a failing reviewer.
 
 ## Cost
 
@@ -118,11 +127,25 @@ Free-tier rate limits (links to authoritative sources, since they change):
 - **Phase 4 — Unified gateway.** Single FastAPI service consolidating all
   edges (GitHub/Slack/Linear) with shared agent core, Postgres for memory.
 
-## Tests
+## Local development
+
+A `Makefile` mirrors the CI gates so you can run the full check before
+pushing:
 
 ```bash
-uv run pytest -q
+make install   # uv sync (runtime + dev)
+make hooks     # install pre-commit (one-time)
+
+make fmt       # ruff format
+make lint      # ruff check (lint rules)
+make type      # mypy --strict
+make test      # pytest --cov
+make check     # all of: fmt --check, lint, type, test
 ```
+
+Pre-commit (configured in `.pre-commit-config.yaml`) runs `ruff check
+--fix` and `ruff format` on every commit so style stays clean without
+manual remembering.
 
 Consensus and rendering have full unit coverage without LLM mocks — that's
 the point of structured output.

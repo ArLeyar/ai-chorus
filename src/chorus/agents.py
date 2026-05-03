@@ -1,7 +1,14 @@
 """Reviewer agent factory.
 
-One agent per provider, all sharing the same prompt, tools, and output_type.
-The vendor-agnostic dream — swap the model string, keep everything else.
+One agent per provider, all sharing the same prompt and the same
+`ReviewResult` shape. Tools and the structured-output strategy are
+per-provider capabilities (see `ProviderConfig.supports_tools`):
+
+- supports_tools=True  → tool-call output, `read_file`/`grep`/`find_callers`
+                         registered.
+- supports_tools=False → `PromptedOutput(ReviewResult)`, no tools registered.
+
+The vendor-agnostic dream — swap the model string, keep most of the rest.
 """
 
 from __future__ import annotations
