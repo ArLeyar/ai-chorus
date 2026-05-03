@@ -5,7 +5,7 @@ description = "Vendor-agnostic AI ops platform — Phase 1: multi-model PR revie
 authors = [
     { name = "Ar Leyar", email = "88294627+ArLeyar@users.noreply.github.com" }
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 license = { text = "MIT" }
 dependencies = [
     # pydantic-ai-slim avoids pulling pydantic-evals, mcp, temporalio etc.
@@ -59,7 +59,7 @@ exclude_lines = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py312"
+target-version = "py313"
 
 [tool.ruff.lint]
 select = [
@@ -95,7 +95,7 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.13"
 strict = true
 warn_return_any = true
 warn_unused_configs = true

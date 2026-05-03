@@ -21,32 +21,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install ripgrep
-        run: sudo apt-get update && sudo apt-get install -y ripgrep
-
-      - uses: astral-sh/setup-uv@v3
-      - run: uv python install 3.12
-      - run: uv sync --frozen --no-default-groups
-
-      - name: Run multi-model review
-        # --no-sync trusts the venv from the previous step; without it
-        # `uv run` re-installs default groups (including dev → ruff/pytest).
-        run: uv run --no-sync python -m chorus.review
+      # Dogfood: ai-chorus reviews itself by invoking its own composite
+      # action via `uses: ./`. This proves the published action surface
+      # works on at least one real repo (this one) before tagging.
+      - uses: ./
+        with:
+          providers: gemini,groq,openrouter
+          polish: '1'
         env:
-          # Optional — missing keys gracefully degrade to ⚠️ skipped.
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-
-          # Enable LLM-as-judge polish — adds a one-line verdict at the
-          # top of the comment using Gemini Flash. Best-effort; failure
-          # is silent and comment posts without verdict.
-          CHORUS_POLISH: "1"
-
-          # Required for posting the comment.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-          # PR context.
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
