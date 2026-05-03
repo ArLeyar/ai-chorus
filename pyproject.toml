@@ -1,0 +1,40 @@
+[project]
+name = "chorus"
+version = "0.1.0"
+description = "Vendor-agnostic AI ops platform — Phase 1: multi-model PR review"
+authors = [
+    { name = "Ar Leyar", email = "88294627+ArLeyar@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = [
+    "pydantic-ai>=1.0,<1.1",
+    "pydantic>=2.7",
+    "httpx>=0.27",
+    "rapidfuzz>=3.9",
+]
+
+[project.scripts]
+chorus-review = "chorus.review:cli"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.5",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.26,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
