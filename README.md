@@ -3,7 +3,7 @@
 > Vendor-agnostic AI ops platform. **Phase 1: multi-model PR review.**
 
 When one model isn't enough, run several. Every PR in this repo gets reviewed
-by three independent LLMs in parallel — Gemini, Llama (Groq), DeepSeek R1
+by three independent LLMs in parallel — Gemini, Llama (Groq), Qwen3 80B
 (OpenRouter) — and the results are merged with deterministic consensus logic.
 
 Built with [Pydantic AI](https://pydantic.dev/docs/ai/), runs entirely on
@@ -35,7 +35,7 @@ GitHub Actions runner
    │                                      │
    │  • google-gla:gemini-2.5-flash       │
    │  • groq:llama-3.3-70b-versatile      │
-   │  • openrouter:deepseek/...:free      │
+   │  • openrouter:qwen/qwen3-next-80b... │
    │                                      │
    │  output_type = ReviewResult (Pydantic)
    │  tools = read_file / grep / find_callers
