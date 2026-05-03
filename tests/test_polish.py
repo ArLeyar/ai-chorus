@@ -39,10 +39,15 @@ async def test_polish_disabled_returns_none(monkeypatch):
     assert result is None
 
 
-async def test_polish_no_api_key_returns_none(monkeypatch):
-    """Even with CHORUS_POLISH=1, missing GOOGLE_API_KEY → graceful None."""
+async def test_polish_no_api_keys_returns_none(monkeypatch):
+    """Even with CHORUS_POLISH=1, missing all keys → graceful None.
+
+    Polish tries providers in fallback order; only when ALL of them are
+    missing keys does it give up and return None.
+    """
     monkeypatch.setenv("CHORUS_POLISH", "1")
-    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    for key in ("GOOGLE_API_KEY", "GROQ_API_KEY", "OPENROUTER_API_KEY"):
+        monkeypatch.delenv(key, raising=False)
     reviews = [_r("gemini", _f("a.py", "x"))]
     result = await polish(consolidate(reviews), reviews)
     assert result is None
